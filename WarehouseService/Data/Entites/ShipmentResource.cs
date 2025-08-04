@@ -1,6 +1,6 @@
 ﻿namespace WarehouseService.Data.Entites
 {
-    public class ShipmentResourse : BaseEntity
+    public class ShipmentResource : BaseEntity
     {
         public Guid ResourceId { get; set; }
         public Resource Resource { get; set; } = null!;
@@ -9,5 +9,7 @@
         public Unit Unit { get; set; } = null!;
 
         public decimal Quantity { get; set; }
+
+        public ShipmentDocument ShipmentDocument { get; set; } = null!;
     }
 }

@@ -13,7 +13,6 @@ namespace WarehouseService.Data.Entites
 
 
         public Guid? ShipmentResourseId { get; set; }
-        public ShipmentResourse? ShipmentResourse { get; set; }
-
+        public ShipmentResource? ShipmentResourse { get; set; }
     }
 }

@@ -1,4 +1,6 @@
 
+using WarehouseService.Extentions;
+
 namespace WarehouseService
 {
     public class Program
@@ -8,20 +10,24 @@ namespace WarehouseService
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
-
-            builder.Services.AddControllers();
-            // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-            builder.Services.AddOpenApi();
+            builder.AddData();
+            builder.AddControllers();
+            builder.AddAutoMapper();
+            builder.AddAppServices();
+            builder.AddExceptionHandler();
+            builder.AddSwagger();
+            builder.AddFluentValidation();
 
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
-                app.MapOpenApi();
+                app.UseSwagger();
+                app.UseSwaggerUI();
             }
 
-            app.UseHttpsRedirection();
+            app.UseExceptionHandler();
 
             app.UseAuthorization();
 

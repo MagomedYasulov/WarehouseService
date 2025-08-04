@@ -9,5 +9,6 @@
         public Unit Unit { get; set; } = null!;
 
         public decimal Quantity { get; set; }
+        public ReceiptDocument ReceiptDocument { get; set; } = null!;
     }
 }
