@@ -28,10 +28,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Abstractions\" />
     <Folder Include="Services\" />
-    <Folder Include="ViewModels\Request\" />
-    <Folder Include="ViewModels\Response\" />
   </ItemGroup>
 
 </Project>
