@@ -22,15 +22,15 @@ namespace WarehouseService.Controllers
         [HttpPost]
         public async Task<ActionResult<ResourceDto>> Create(CreateResourceDto model)
         {
-            var courseDto = await _resourceService.Create(model);
-            return Ok(courseDto);
+            var resourceDto = await _resourceService.Create(model);
+            return Ok(resourceDto);
         }
 
         [HttpGet("{id:guid}")]
         public async Task<ActionResult<ResourceDto>> Get(Guid id)
         {
-            var courseDto = await _resourceService.Get(id);
-            return Ok(courseDto);
+            var resourceDto = await _resourceService.Get(id);
+            return Ok(resourceDto);
         }
 
         [HttpGet]
@@ -43,8 +43,8 @@ namespace WarehouseService.Controllers
         [HttpPut("{id:guid}")]
         public async Task<ActionResult<ResourceDto>> Update(Guid id, UpdateResourceDto model)
         {
-            var courseDto = await _resourceService.Update(id, model);
-            return Ok(courseDto);
+            var resourceDto = await _resourceService.Update(id, model);
+            return Ok(resourceDto);
         }
 
         [HttpDelete("{id:guid}")]

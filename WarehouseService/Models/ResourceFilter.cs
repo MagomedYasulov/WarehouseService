@@ -2,5 +2,6 @@
 {
     public class ResourceFilter
     {
+        public bool? Revoked { get; set; }
     }
 }

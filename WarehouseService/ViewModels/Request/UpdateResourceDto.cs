@@ -2,5 +2,6 @@
 {
     public class UpdateResourceDto
     {
+        public string Name { get; set; }
     }
 }

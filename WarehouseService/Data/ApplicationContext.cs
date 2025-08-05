@@ -23,6 +23,9 @@ namespace WarehouseService.Data
         {
             modelBuilder.Entity<InventoryBalance>().HasIndex(ib => new { ib.ResourseId, ib.UnitId }).IsUnique();
 
+            modelBuilder.Entity<Resource>().HasIndex(r => r.Name).IsUnique();
+            modelBuilder.Entity<Unit>().HasIndex(r => r.Name).IsUnique();
+
         }
     }
 }

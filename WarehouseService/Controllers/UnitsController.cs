@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using WarehouseService.Abstractions;
 using WarehouseService.Filters;
 using WarehouseService.Models;
@@ -23,15 +22,15 @@ namespace WarehouseService.Controllers
         [HttpPost]
         public async Task<ActionResult<UnitDto>> Create(CreateUnitDto model)
         {
-            var courseDto = await _unitService.Create(model);
-            return Ok(courseDto);
+            var unitDto = await _unitService.Create(model);
+            return Ok(unitDto);
         }
 
         [HttpGet("{id:guid}")]
         public async Task<ActionResult<UnitDto>> Get(Guid id)
         {
-            var courseDto = await _unitService.Get(id);
-            return Ok(courseDto);
+            var unitDto = await _unitService.Get(id);
+            return Ok(unitDto);
         }
 
         [HttpGet]
@@ -44,8 +43,8 @@ namespace WarehouseService.Controllers
         [HttpPut("{id:guid}")]
         public async Task<ActionResult<UnitDto>> Update(Guid id, UpdateUnitDto model)
         {
-            var courseDto = await _unitService.Update(id, model);
-            return Ok(courseDto);
+            var unitDto = await _unitService.Update(id, model);
+            return Ok(unitDto);
         }
 
         [HttpDelete("{id:guid}")]

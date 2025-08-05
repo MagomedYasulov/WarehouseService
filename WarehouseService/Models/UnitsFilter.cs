@@ -2,5 +2,6 @@
 {
     public class UnitsFilter
     {
+        public bool? Revoked { get; set; }
     }
 }
