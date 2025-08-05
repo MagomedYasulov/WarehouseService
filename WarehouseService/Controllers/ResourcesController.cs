@@ -48,7 +48,7 @@ namespace WarehouseService.Controllers
         }
 
         [HttpDelete("{id:guid}")]
-        public async Task<ActionResult> Delete(Guid id, bool isSoft)
+        public async Task<ActionResult> Delete(Guid id, [FromQuery]bool isSoft)
         {
             await _resourceService.Delete(id, isSoft);
             return Ok();

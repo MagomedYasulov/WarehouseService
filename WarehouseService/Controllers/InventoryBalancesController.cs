@@ -17,16 +17,16 @@ namespace WarehouseService.Controllers
         }
 
         [HttpGet("{id:guid}")]
-        public async Task<ActionResult<ClientDto>> Get(Guid id)
+        public async Task<ActionResult<InventoryBalanceDto>> Get(Guid id)
         {
             var courseDto = await _inventoryBalanceService.Get(id);
             return Ok(courseDto);
         }
 
         [HttpGet]
-        public async Task<ActionResult<ClientDto[]>> Get()
+        public async Task<ActionResult<InventoryBalanceDto[]>> Get(InventoryBalanceFilter filter)
         {
-            var coursesDto = await _inventoryBalanceService.Get();
+            var coursesDto = await _inventoryBalanceService.Get(filter);
             return Ok(coursesDto);
         }
     }

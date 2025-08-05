@@ -7,6 +7,8 @@ using WarehouseService.Data;
 using WarehouseService.Middlewares;
 using WarehouseService.Validators;
 using WarehouseService.Models;
+using WarehouseService.Services;
+using WarehouseService.Abstractions;
 
 namespace WarehouseService.Extentions
 {
@@ -52,6 +54,8 @@ namespace WarehouseService.Extentions
 
         public static WebApplicationBuilder AddAppServices(this WebApplicationBuilder builder)
         {
+            builder.Services.AddScoped<IResourceService, ResourceService>();
+            builder.Services.AddScoped<IUnitService, UnitService>();
             return builder;
         }
 

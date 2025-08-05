@@ -1,4 +1,6 @@
 ﻿using AutoMapper;
+using WarehouseService.Data.Entites;
+using WarehouseService.ViewModels.Response;
 
 namespace WarehouseService.Models
 {
@@ -6,6 +8,8 @@ namespace WarehouseService.Models
     {
         public AutoMapperProfile()
         {
+            CreateMap<Resource, ResourceDto>();
+            CreateMap<Unit, UnitDto>();
         }
     }
 }
