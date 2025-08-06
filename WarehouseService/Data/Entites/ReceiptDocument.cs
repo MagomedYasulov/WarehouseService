@@ -2,9 +2,9 @@
 {
     public class ReceiptDocument : BaseEntity
     {
-        public int Number { get; set; }
+        public string DocumentNumber { get; set; } = string.Empty;
         public DateTime ReceiptDate { get; set; }
 
-        public ReceiptResourse[] ReceiptResourses { get; set; } = [];
+        public ReceiptResourse[] ReceiptResources { get; set; } = [];
     }
 }

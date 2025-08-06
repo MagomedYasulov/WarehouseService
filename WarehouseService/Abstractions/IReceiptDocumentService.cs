@@ -6,10 +6,10 @@ namespace WarehouseService.Abstractions
 {
     public interface IReceiptDocumentService
     {
-        public Task<ResourceDto> Create(CreateReceiptDocumentDto model);
-        public Task<ResourceDto> Update(Guid id, UpdateReceiptDocumentDto model);
-        public Task<ResourceDto[]> Get(ReceiptDocumentFilter filter);
-        public Task<ResourceDto> Get(Guid id);
+        public Task<ReceiptDocumentDto> Create(CreateReceiptDocumentDto model);
+        public Task<ReceiptDocumentDto> Update(Guid id, UpdateReceiptDocumentDto model);
+        public Task<ReceiptDocumentDto[]> Get(ReceiptDocumentFilter filter);
+        public Task<ReceiptDocumentDto> Get(Guid id);
         public Task Delete(Guid id);
     }
 }

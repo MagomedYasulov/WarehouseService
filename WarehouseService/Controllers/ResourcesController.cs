@@ -36,8 +36,8 @@ namespace WarehouseService.Controllers
         [HttpGet]
         public async Task<ActionResult<ResourceDto[]>> Get(ResourceFilter filter)
         {
-            var coursesDto = await _resourceService.Get(filter);
-            return Ok(coursesDto);
+            var resourceDto = await _resourceService.Get(filter);
+            return Ok(resourceDto);
         }
 
         [HttpPut("{id:guid}")]

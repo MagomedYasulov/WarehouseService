@@ -22,6 +22,12 @@ namespace WarehouseService.Data
 
             modelBuilder.Entity<Resource>().HasIndex(r => r.Name).IsUnique();
             modelBuilder.Entity<Unit>().HasIndex(r => r.Name).IsUnique();
+            modelBuilder.Entity<ReceiptDocument>().HasIndex(r => r.DocumentNumber).IsUnique();
+
+            modelBuilder.Entity<ReceiptDocument>()
+                .HasMany(rd => rd.ReceiptResources)
+                .WithOne(rr => rr.ReceiptDocument)
+                .OnDelete(DeleteBehavior.Cascade);
 
         }
     }
