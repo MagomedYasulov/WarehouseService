@@ -29,12 +29,32 @@ namespace WarehouseService.Services
             if (await _dbContext.ReceiptDocuments.AnyAsync(rd => rd.DocumentNumber == model.DocumentNumber))
                 throw new ServiceException("Document Number Conflict", $"Document with number {model.DocumentNumber} already exist", StatusCodes.Status409Conflict);
 
+            //Объединение всех объектов у которых одинаковый ResourceId и UnitIdы
+            model.ReceiptResources = model.ReceiptResources!.GroupBy(r => new { r.ResourceId, r.UnitId })
+                                    .Select(g => new CreateReceiptResourceDto
+                                    {
+                                        ResourceId = g.Key.ResourceId,
+                                        UnitId = g.Key.UnitId,
+                                        Quantity = g.Sum(x => x.Quantity)
+                                    }).ToArray();
+
             var receiptDocument = _mapper.Map<ReceiptDocument>(model);
+
+            //Проверка на то можно ли использовать ресурс или единицу измерения
+            var resourcesId = model.ReceiptResources.Select(r => r.ResourceId).Distinct();
+            foreach (var resourceId in resourcesId)
+                if (!await _dbContext.Resources.AnyAsync(r => r.Id == resourceId && !r.Revoked))
+                    throw new ServiceException("Can`t Use Resource", $"Resource with id {resourceId} can`be used for receipt document", StatusCodes.Status409Conflict);
+
+            var unitsId = model.ReceiptResources.Select(r => r.UnitId).Distinct();
+            foreach (var unitId in unitsId)
+                if (!await _dbContext.Units.AnyAsync(r => r.Id == unitId && !r.Revoked))
+                    throw new ServiceException("Can`t Use Unit", $"Unit with id {unitId} can`be used for receipt document", StatusCodes.Status409Conflict);
+
 
             await _dbContext.ReceiptDocuments.AddAsync(receiptDocument);
             foreach(var receiptResource in receiptDocument.ReceiptResources)
             {
-                //TODO: проверить чот будет если несоклько одинаовых не существующих ресурсов поступления
                 var inventoryBalance = await _dbContext.InventoryBalances.FirstOrDefaultAsync(
                                                 ib => ib.ResourseId == receiptResource.ResourceId && ib.UnitId == receiptResource.UnitId);
 
@@ -109,6 +129,43 @@ namespace WarehouseService.Services
             if (receiptDocument == null)
                 throw new ServiceException("Receipt Document Not Found", $"Receipt document with id {id} not found", StatusCodes.Status404NotFound);
 
+         
+
+            //Объединение всех объектов у которых одинаковый ResourceId и UnitIdы
+            model.ReceiptResources = model.ReceiptResources!.GroupBy(r => new { r.ResourceId, r.UnitId })
+                                    .Select(g => new UpdateReceiptResourceDto
+                                    {
+                                        ResourceId = g.Key.ResourceId,
+                                        UnitId = g.Key.UnitId,
+                                        Quantity = g.Sum(x => x.Quantity)
+                                    }).ToArray();
+
+
+            //Проверка на то можно ли использовать ресурс или единицу измерения
+            var resourcesId = model.ReceiptResources.Select(r => r.ResourceId).Distinct();
+            foreach (var resourceId in resourcesId)
+            {
+                var resource = await _dbContext.Resources.FirstOrDefaultAsync(r => r.Id == resourceId);
+                if (resource == null)
+                    throw new ServiceException("Resource not found", $"Resource with id {resourceId} not found", StatusCodes.Status404NotFound);
+
+                if(resource.Revoked && receiptDocument.ReceiptResources.Any(r => r.ResourceId == resource.Id))
+                    throw new ServiceException("Resource is revoked", $"Resource with id {resourceId} is revoked", StatusCodes.Status409Conflict);
+            }
+
+            //Проверка на то можно ли использовать рессурс или единицу измерения
+            var unitsId = model.ReceiptResources.Select(r => r.UnitId).Distinct();
+            foreach (var unitId in unitsId)
+            {
+                var unit = await _dbContext.Units.FirstOrDefaultAsync(r => r.Id == unitId);
+                if (unit == null)
+                    throw new ServiceException("Unit not found", $"Unit with id {unitId} not found", StatusCodes.Status404NotFound);
+
+                if (unit.Revoked && receiptDocument.ReceiptResources.Any(r => r.UnitId == unit.Id))
+                    throw new ServiceException("Unit is revoked", $"Unit with id {unitId} is revoked", StatusCodes.Status409Conflict);
+            }
+
+
             receiptDocument.DocumentNumber = model.DocumentNumber;
             receiptDocument.ReceiptDate = model.ReceiptDate;
 
@@ -123,10 +180,10 @@ namespace WarehouseService.Services
                 _dbContext.ReceiptResourses.Remove(receiptResource);
             }
 
+
             foreach (var receiptResource in model.ReceiptResources!)
             {
-                //TODO: проверить чот будет если несоклько одинаовых не существующих ресурсов поступления
-                var inventoryBalance = await _dbContext.InventoryBalances.FirstOrDefaultAsync(
+                var inventoryBalance = inventoryBalances.FirstOrDefault(
                                                 ib => ib.ResourseId == receiptResource.ResourceId && ib.UnitId == receiptResource.UnitId);
 
                 var newReceiptRecource = _mapper.Map<ReceiptResourse>(receiptResource);
