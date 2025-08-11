@@ -27,7 +27,7 @@ namespace WarehouseService.Extentions
         public static WebApplicationBuilder AddControllers(this WebApplicationBuilder builder)
         {
             builder.Services.AddRouting(opt => opt.LowercaseUrls = true);
-            builder.Services.AddControllers().AddNewtonsoftJson(options =>
+            builder.Services.AddControllersWithViews().AddRazorRuntimeCompilation().AddNewtonsoftJson(options =>
             {
                 options.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
                 options.SerializerSettings.NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore;
