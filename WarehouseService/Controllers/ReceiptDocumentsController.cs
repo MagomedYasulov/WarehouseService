@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using WarehouseService.Abstractions;
+using WarehouseService.Filters;
 using WarehouseService.Models;
 using WarehouseService.ViewModels.Request;
 using WarehouseService.ViewModels.Response;
@@ -7,6 +8,7 @@ using WarehouseService.ViewModels.Response;
 namespace WarehouseService.Controllers
 {
     [Route("api/v1/[controller]")]
+    [TypeFilter<ApiExceptionFilter>]
     [ApiController]
     public class ReceiptDocumentsController : ControllerBase
     {

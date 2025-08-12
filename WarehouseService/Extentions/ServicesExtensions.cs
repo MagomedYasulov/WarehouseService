@@ -16,11 +16,7 @@ namespace WarehouseService.Extentions
     {
         public static WebApplicationBuilder AddData(this WebApplicationBuilder builder)
         {
-            if (builder.Environment.IsDevelopment())
-                builder.Services.AddDbContext<ApplicationContext>(opt => opt.UseInMemoryDatabase("TestDB"));
-            else
-                builder.Services.AddDbContext<ApplicationContext>(opt => opt.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
-
+            builder.Services.AddDbContext<ApplicationContext>(opt => opt.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
             return builder;
         }
 

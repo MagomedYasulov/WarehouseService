@@ -38,6 +38,8 @@ namespace WarehouseService.Services
                                         Quantity = g.Sum(x => x.Quantity)
                                     }).ToArray();
 
+            model.ReceiptDate = model.ReceiptDate.Kind == DateTimeKind.Utc ? model.ReceiptDate : model.ReceiptDate.ToUniversalTime();
+
             var receiptDocument = _mapper.Map<ReceiptDocument>(model);
 
             //Проверка на то можно ли использовать ресурс или единицу измерения
@@ -142,6 +144,7 @@ namespace WarehouseService.Services
                                         Quantity = g.Sum(x => x.Quantity)
                                     }).ToArray();
 
+            model.ReceiptDate = model.ReceiptDate.Kind == DateTimeKind.Utc ? model.ReceiptDate : model.ReceiptDate.ToUniversalTime();
 
             //Проверка на то можно ли использовать ресурс или единицу измерения
             var resourcesId = model.ReceiptResources.Select(r => r.ResourceId).Distinct();
@@ -151,7 +154,7 @@ namespace WarehouseService.Services
                 if (resource == null)
                     throw new ServiceException("Resource not found", $"Resource with id {resourceId} not found", StatusCodes.Status404NotFound);
 
-                if(resource.Revoked && receiptDocument.ReceiptResources.Any(r => r.ResourceId == resource.Id))
+                if(resource.Revoked && !receiptDocument.ReceiptResources.Any(r => r.ResourceId == resource.Id))
                     throw new ServiceException("Resource is revoked", $"Resource with id {resourceId} is revoked", StatusCodes.Status409Conflict);
             }
 
@@ -163,7 +166,7 @@ namespace WarehouseService.Services
                 if (unit == null)
                     throw new ServiceException("Unit not found", $"Unit with id {unitId} not found", StatusCodes.Status404NotFound);
 
-                if (unit.Revoked && receiptDocument.ReceiptResources.Any(r => r.UnitId == unit.Id))
+                if (unit.Revoked && !receiptDocument.ReceiptResources.Any(r => r.UnitId == unit.Id))
                     throw new ServiceException("Unit is revoked", $"Unit with id {unitId} is revoked", StatusCodes.Status409Conflict);
             }
 

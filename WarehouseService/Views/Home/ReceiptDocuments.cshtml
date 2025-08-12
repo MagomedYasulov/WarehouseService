@@ -63,6 +63,11 @@
         .resource-row {
             margin-bottom: 5px;
         }
+
+        .filters {
+            margin-top: 20px;
+            margin-bottom: 15px;
+        }
     </style>
 </head>
 <body>
@@ -78,6 +83,7 @@
     <div class="container">
         <h1>Документы поступления</h1>
 
+        <!-- Форма создания/редактирования -->
         <h3 id="formTitle">Создать документ</h3>
         <div class="form-group">
             <input type="hidden" id="docId">
@@ -93,6 +99,23 @@
             <button onclick="resetForm()">Отмена</button>
         </div>
 
+        <!-- Фильтры -->
+        <h3>Фильтры</h3>
+        <div class="filters">
+            <input type="text" id="filterDocNumber" placeholder="Номер документа">
+            <input type="date" id="filterStartDate">
+            <input type="date" id="filterEndDate">
+            <select id="filterResource">
+                <option value="">Все ресурсы</option>
+            </select>
+            <select id="filterUnit">
+                <option value="">Все единицы</option>
+            </select>
+            <button onclick="applyFilters()">Применить</button>
+            <button onclick="clearFilters()">Сбросить</button>
+        </div>
+
+        <!-- Таблица документов -->
         <h3>Список документов</h3>
         <table id="docsTable">
             <thead>
@@ -109,8 +132,8 @@
 
     <script>
         const API_DOCS = '/api/v1/receiptdocuments';
-        const API_RESOURCES = '/api/v1/resources?Revoked=false';
-        const API_UNITS = '/api/v1/units?Revoked=false';
+        const API_RESOURCES = '/api/v1/resources';
+        const API_UNITS = '/api/v1/units';
 
         let availableResources = [];
         let availableUnits = [];
@@ -120,6 +143,24 @@
             availableResources = await resR.json();
             const resU = await fetch(API_UNITS);
             availableUnits = await resU.json();
+
+            // Заполняем фильтры ресурсами
+            const filterResSelect = document.getElementById('filterResource');
+            availableResources.forEach(r => {
+                const opt = document.createElement('option');
+                opt.value = r.id;
+                opt.textContent = r.name || '(без названия)';
+                filterResSelect.appendChild(opt);
+            });
+
+            // Заполняем фильтры единицами
+            const filterUnitSelect = document.getElementById('filterUnit');
+            availableUnits.forEach(u => {
+                const opt = document.createElement('option');
+                opt.value = u.id;
+                opt.textContent = u.name || '(без названия)';
+                filterUnitSelect.appendChild(opt);
+            });
         }
 
         function createResourceSelect(selectedId) {
@@ -179,8 +220,19 @@
             }));
         }
 
-        async function loadDocuments() {
-            const res = await fetch(API_DOCS);
+        async function loadDocuments(params = {}) {
+            let url = API_DOCS;
+            const query = [];
+
+            if (params.DocumentNumber) query.push(`DocumentNumber=${encodeURIComponent(params.DocumentNumber)}`);
+            if (params.StartDate) query.push(`StartTime=${params.StartDate}`);
+            if (params.EndDate) query.push(`EndTime=${params.EndDate}`);
+            if (params.ResourceId) query.push(`ResourceId=${params.ResourceId}`);
+            if (params.UnitId) query.push(`UnitId=${params.UnitId}`);
+
+            if (query.length > 0) url += '?' + query.join('&');
+
+            const res = await fetch(url);
             const docs = await res.json();
             const tbody = document.querySelector('#docsTable tbody');
             tbody.innerHTML = '';
@@ -199,6 +251,26 @@
             });
         }
 
+        function applyFilters() {
+            const params = {
+                DocumentNumber: document.getElementById('filterDocNumber').value.trim(),
+                StartDate: document.getElementById('filterStartDate').value || null,
+                EndDate: document.getElementById('filterEndDate').value || null,
+                ResourceId: document.getElementById('filterResource').value || null,
+                UnitId: document.getElementById('filterUnit').value || null
+            };
+            loadDocuments(params);
+        }
+
+        function clearFilters() {
+            document.getElementById('filterDocNumber').value = '';
+            document.getElementById('filterStartDate').value = '';
+            document.getElementById('filterEndDate').value = '';
+            document.getElementById('filterResource').value = '';
+            document.getElementById('filterUnit').value = '';
+            loadDocuments();
+        }
+
         function resetForm() {
             document.getElementById('docId').value = '';
             document.getElementById('documentNumber').value = '';
@@ -213,8 +285,8 @@
             const receiptDate = document.getElementById('receiptDate').value;
             const receiptResources = getResourcesFromForm();
 
-            if (!documentNumber || !receiptDate || receiptResources.length === 0) {
-                alert('Заполните номер, дату и хотя бы один ресурс');
+            if (!documentNumber || !receiptDate) {
+                alert('Заполните номер, дату');
                 return;
             }
 
