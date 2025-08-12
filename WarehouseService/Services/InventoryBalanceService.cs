@@ -1,7 +1,10 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
+using System.Linq.Expressions;
 using WarehouseService.Abstractions;
 using WarehouseService.Data;
+using WarehouseService.Data.Entites;
 using WarehouseService.Exceptions;
 using WarehouseService.Models;
 using WarehouseService.ViewModels.Response;
@@ -32,7 +35,14 @@ namespace WarehouseService.Services
 
         public async Task<InventoryBalanceDto[]> Get(InventoryBalanceFilter filter)
         {
-            var balances = await _dbContext.InventoryBalances.AsNoTracking().Include(b => b.Resource).Include(b => b.Unit).ToArrayAsync();
+            var isResourceIdNull = filter.ResourceId == null;
+            var isUnitIdNull = filter.UnitId == null;
+
+            Expression<Func<InventoryBalance, bool>> predicate = (balance) => (isResourceIdNull || balance.ResourceId == filter.ResourceId) &&
+                                                                              (isUnitIdNull || balance.UnitId == filter.UnitId);
+
+
+            var balances = await _dbContext.InventoryBalances.AsNoTracking().Where(predicate).Include(b => b.Resource).Include(b => b.Unit).ToArrayAsync();
             return _mapper.Map<InventoryBalanceDto[]>(balances);
         }
     }

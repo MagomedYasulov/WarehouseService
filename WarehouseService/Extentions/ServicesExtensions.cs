@@ -56,6 +56,8 @@ namespace WarehouseService.Extentions
         {
             builder.Services.AddScoped<IResourceService, ResourceService>();
             builder.Services.AddScoped<IUnitService, UnitService>();
+            builder.Services.AddScoped<IReceiptDocumentService, ReceiptDocumentService>();
+            builder.Services.AddScoped<IInventoryBalanceService, InventoryBalanceService>();
             return builder;
         }
 

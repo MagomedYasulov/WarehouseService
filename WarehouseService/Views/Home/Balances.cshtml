@@ -1,0 +1,158 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Балансы</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        h1 {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        nav {
+            background-color: #333;
+            padding: 10px 20px;
+        }
+
+            nav a {
+                color: white;
+                text-decoration: none;
+                margin-right: 20px;
+                font-weight: bold;
+            }
+
+                nav a:hover {
+                    text-decoration: underline;
+                }
+
+        .container {
+            padding: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background: #f4f4f4;
+        }
+
+        .filters {
+            margin-bottom: 15px;
+        }
+
+        select {
+            padding: 5px;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Навигация -->
+    <nav>
+        <a href="/home/resources">Ресурсы</a>
+        <a href="/home/units">Единицы измерения</a>
+        <a href="/home/balances">Балансы</a>
+        <a href="/home/receipt-documents">Ресурсы поступления</a>
+    </nav>
+
+    <div class="container">
+        <h1>Балансы</h1>
+
+        <div class="filters">
+            <select id="resourceFilter">
+                <option value="">Все ресурсы</option>
+            </select>
+            <select id="unitFilter">
+                <option value="">Все единицы</option>
+            </select>
+            <button onclick="loadBalances()">Применить</button>
+        </div>
+
+        <table id="balancesTable">
+            <thead>
+                <tr>
+                    <th>Ресурс</th>
+                    <th>Единица</th>
+                    <th>Количество</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <script>
+        const API_BALANCES = '/api/v1/inventorybalances';
+        const API_RESOURCES = '/api/v1/resources?Revoked=false';
+        const API_UNITS = '/api/v1/units?Revoked=false';
+
+        async function loadFilters() {
+            const resResources = await fetch(API_RESOURCES);
+            const resources = await resResources.json();
+            const resourceSelect = document.getElementById('resourceFilter');
+            resources.forEach(r => {
+                const opt = document.createElement('option');
+                opt.value = r.id;
+                opt.textContent = r.name || '(без названия)';
+                resourceSelect.appendChild(opt);
+            });
+
+            const resUnits = await fetch(API_UNITS);
+            const units = await resUnits.json();
+            const unitSelect = document.getElementById('unitFilter');
+            units.forEach(u => {
+                const opt = document.createElement('option');
+                opt.value = u.id;
+                opt.textContent = u.name || '(без названия)';
+                unitSelect.appendChild(opt);
+            });
+        }
+
+        async function loadBalances() {
+            const resourceId = document.getElementById('resourceFilter').value;
+            const unitId = document.getElementById('unitFilter').value;
+
+            let url = API_BALANCES;
+            const params = [];
+            if (resourceId) params.push(`ResourceId=${resourceId}`);
+            if (unitId) params.push(`UnitId=${unitId}`);
+            if (params.length > 0) url += '?' + params.join('&');
+
+            const res = await fetch(url);
+            const balances = await res.json();
+            const tbody = document.querySelector('#balancesTable tbody');
+            tbody.innerHTML = '';
+            balances.forEach(b => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${b.resource?.name || ''}</td>
+                    <td>${b.unit?.name || ''}</td>
+                    <td>${b.quantity ?? ''}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        (async function init() {
+            await loadFilters();
+            await loadBalances();
+        })();
+    </script>
+
+</body>
+</html>

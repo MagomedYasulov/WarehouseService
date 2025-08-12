@@ -1,0 +1,163 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Единицы измерения</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        h1 {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        nav {
+            background-color: #333;
+            padding: 10px 20px;
+        }
+
+            nav a {
+                color: white;
+                text-decoration: none;
+                margin-right: 20px;
+                font-weight: bold;
+            }
+
+                nav a:hover {
+                    text-decoration: underline;
+                }
+
+        .container {
+            padding: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background: #f4f4f4;
+        }
+
+        .form-group {
+            margin-bottom: 10px;
+        }
+
+        input[type="text"] {
+            padding: 5px;
+            width: 300px;
+        }
+
+        button {
+            padding: 5px 10px;
+            margin-right: 5px;
+        }
+
+        .revoked {
+            background-color: #ffe5e5;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Навигация -->
+    <nav>
+        <a href="/home/resources">Ресурсы</a>
+        <a href="/home/units">Единицы измерения</a>
+        <a href="/home/balances">Балансы</a>
+        <a href="/home/receipt-documents">Ресурсы поступления</a>
+    </nav>
+
+    <div class="container">
+        <h1>Единицы измерения</h1>
+
+        <h3>Добавить единицу</h3>
+        <div class="form-group">
+            <input type="text" id="newName" placeholder="Название единицы">
+            <button onclick="createUnit()">Создать</button>
+        </div>
+
+        <table id="unitsTable">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Название</th>
+                    <th>Архивирован</th>
+                    <th>Действия</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <script>
+        const API_BASE = '/api/v1/units';
+
+        async function loadUnits() {
+            const res = await fetch(API_BASE);
+            const all = await res.json();
+            const tbody = document.querySelector('#unitsTable tbody');
+            tbody.innerHTML = '';
+            all.forEach(u => {
+                const tr = document.createElement('tr');
+                if (u.revoked) tr.classList.add('revoked');
+                tr.innerHTML = `
+                    <td>${u.id}</td>
+                    <td><input type="text" value="${u.name || ''}" id="name-${u.id}"></td>
+                    <td>${u.revoked ? 'Да' : 'Нет'}</td>
+                    <td>
+                        <button onclick="updateUnit('${u.id}')">Сохранить</button>
+                        ${u.revoked
+                            ? `<button onclick="restoreUnit('${u.id}')">Восстановить</button>
+                               <button onclick="deleteUnit('${u.id}', false)">Удалить</button>`
+                            : `<button onclick="deleteUnit('${u.id}', true)">Архивировать</button>
+                               <button onclick="deleteUnit('${u.id}', false)">Удалить</button>`}
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        async function createUnit() {
+            const name = document.getElementById('newName').value.trim();
+            if (!name) return alert('Введите название единицы');
+            await fetch(API_BASE, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name }) });
+            document.getElementById('newName').value = '';
+            loadUnits();
+        }
+
+        async function updateUnit(id) {
+            const name = document.getElementById(`name-${id}`).value.trim();
+            await fetch(`${API_BASE}/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name }) });
+            loadUnits();
+        }
+
+        async function deleteUnit(id, isSoft) {
+            const confirmMsg = isSoft ? 'Архивировать единицу?' : 'Удалить единицу навсегда?';
+            if (!confirm(confirmMsg)) return;
+            await fetch(`${API_BASE}/${id}?isSoft=${isSoft}`, { method: 'DELETE' });
+            loadUnits();
+        }
+
+        async function restoreUnit(id) {
+            const name = document.getElementById(`name-${id}`).value.trim();
+            await fetch(`${API_BASE}/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name }) });
+            loadUnits();
+        }
+
+        loadUnits();
+    </script>
+</body>
+</html>

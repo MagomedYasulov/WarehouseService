@@ -5,6 +5,6 @@
         public string DocumentNumber { get; set; } = string.Empty;
         public DateTime ReceiptDate { get; set; }
 
-        public ReceiptResourse[] ReceiptResources { get; set; } = [];
+        public List<ReceiptResourse> ReceiptResources { get; set; } = [];
     }
 }

@@ -1,1 +1,186 @@
-﻿<h1>СТраница ресрусров</h1>
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Управление ресурсами</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        h1 {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        /* Навигация */
+        nav {
+            background-color: #333;
+            padding: 10px 20px;
+        }
+
+            nav a {
+                color: white;
+                text-decoration: none;
+                margin-right: 20px;
+                font-weight: bold;
+            }
+
+                nav a:hover {
+                    text-decoration: underline;
+                }
+
+        /* Контейнер */
+        .container {
+            padding: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background: #f4f4f4;
+        }
+
+        .form-group {
+            margin-bottom: 10px;
+        }
+
+        input[type="text"] {
+            padding: 5px;
+            width: 300px;
+        }
+
+        button {
+            padding: 5px 10px;
+            margin-right: 5px;
+        }
+
+        .revoked {
+            background-color: #ffe5e5;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Навигация -->
+    <nav>
+        <a href="/home/resources">Ресурсы</a>
+        <a href="/home/units">Единицы измерения</a>
+        <a href="/home/balances">Балансы</a>
+        <a href="/home/receipt-documents">Ресурсы поступления</a>
+    </nav>
+
+    <div class="container">
+        <h1>Управление ресурсами</h1>
+
+        <div>
+            <h3>Добавить ресурс</h3>
+            <div class="form-group">
+                <input type="text" id="newName" placeholder="Название ресурса">
+                <button onclick="createResource()">Создать</button>
+            </div>
+        </div>
+
+        <table id="resourcesTable">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Название</th>
+                    <th>Архивирован</th>
+                    <th>Действия</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <script>
+        const API_BASE = '/api/v1/resources'; 
+
+        async function loadResources() {
+            const res = await fetch(API_BASE);
+            const all = await res.json();
+
+            const tbody = document.querySelector('#resourcesTable tbody');
+            tbody.innerHTML = '';
+
+            all.forEach(r => {
+                const tr = document.createElement('tr');
+                if (r.revoked) tr.classList.add('revoked');
+                tr.innerHTML = `
+                    <td>${r.id}</td>
+                    <td><input type="text" value="${r.name || ''}" id="name-${r.id}"></td>
+                    <td>${r.revoked ? 'Да' : 'Нет'}</td>
+                    <td>
+                        <button onclick="updateResource('${r.id}')">Сохранить</button>
+                        ${r.revoked
+                            ? `<button onclick="restoreResource('${r.id}')">Восстановить</button>
+                               <button onclick="deleteResource('${r.id}', false)">Удалить</button>`
+                            : `<button onclick="deleteResource('${r.id}', true)">Архивировать</button>
+                               <button onclick="deleteResource('${r.id}', false)">Удалить</button>`}
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        async function createResource() {
+            const name = document.getElementById('newName').value.trim();
+            if (!name) return alert('Введите название ресурса');
+
+            await fetch(API_BASE, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name })
+            });
+            document.getElementById('newName').value = '';
+            loadResources();
+        }
+
+        async function updateResource(id) {
+            const name = document.getElementById(`name-${id}`).value.trim();
+            await fetch(`${API_BASE}/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name })
+            });
+            loadResources();
+        }
+
+        async function deleteResource(id, isSoft) {
+            const confirmMsg = isSoft ? 'Архивировать ресурс?' : 'Удалить ресурс навсегда?';
+            if (!confirm(confirmMsg)) return;
+
+            await fetch(`${API_BASE}/${id}?isSoft=${isSoft}`, {
+                method: 'DELETE'
+            });
+            loadResources();
+        }
+
+        async function restoreResource(id) {
+            const name = document.getElementById(`name-${id}`).value.trim();
+            await fetch(`${API_BASE}/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name })
+            });
+            loadResources();
+        }
+
+        loadResources();
+    </script>
+
+</body>
+</html>

@@ -56,7 +56,7 @@ namespace WarehouseService.Services
             foreach(var receiptResource in receiptDocument.ReceiptResources)
             {
                 var inventoryBalance = await _dbContext.InventoryBalances.FirstOrDefaultAsync(
-                                                ib => ib.ResourseId == receiptResource.ResourceId && ib.UnitId == receiptResource.UnitId);
+                                                ib => ib.ResourceId == receiptResource.ResourceId && ib.UnitId == receiptResource.UnitId);
 
                 if(inventoryBalance != null)
                 {
@@ -67,7 +67,7 @@ namespace WarehouseService.Services
                 inventoryBalance = new InventoryBalance()
                 {
                     UnitId = receiptResource.UnitId,
-                    ResourseId = receiptResource.ResourceId,
+                    ResourceId = receiptResource.ResourceId,
                     Quantity = receiptResource.Quantity
                 };
 
@@ -101,7 +101,9 @@ namespace WarehouseService.Services
             Func<ReceiptResourse, bool> rrFilter = (rr) => (isResourceIdNull || rr.ResourceId == filter.ResourceId) &&
                                                            (isUnitIdNull || rr.UnitId == filter.UnitId);
 
-            receiptDocument = receiptDocument.Where(rd => rd.ReceiptResources.Any(rrFilter)).ToArray();
+           
+            if(!isResourceIdNull || !isUnitIdNull)
+                receiptDocument = receiptDocument.Where(rd => rd.ReceiptResources.Any(rrFilter)).ToArray();
 
             return _mapper.Map<ReceiptDocumentDto[]>(receiptDocument);
         }
@@ -173,7 +175,7 @@ namespace WarehouseService.Services
             foreach (var receiptResource in receiptDocument.ReceiptResources)
             {
                 var inventoryBalance = await _dbContext.InventoryBalances.FirstAsync(
-                                                ib => ib.ResourseId == receiptResource.ResourceId && ib.UnitId == receiptResource.UnitId);
+                                                ib => ib.ResourceId == receiptResource.ResourceId && ib.UnitId == receiptResource.UnitId);
 
                 inventoryBalance.Quantity -= receiptResource.Quantity;
                 inventoryBalances.Add(inventoryBalance);
@@ -184,7 +186,7 @@ namespace WarehouseService.Services
             foreach (var receiptResource in model.ReceiptResources!)
             {
                 var inventoryBalance = inventoryBalances.FirstOrDefault(
-                                                ib => ib.ResourseId == receiptResource.ResourceId && ib.UnitId == receiptResource.UnitId);
+                                                ib => ib.ResourceId == receiptResource.ResourceId && ib.UnitId == receiptResource.UnitId);
 
                 var newReceiptRecource = _mapper.Map<ReceiptResourse>(receiptResource);
                 newReceiptRecource.ReceiptDocumentId = id;
@@ -200,7 +202,7 @@ namespace WarehouseService.Services
                 inventoryBalance = new InventoryBalance()
                 {
                     UnitId = receiptResource.UnitId!.Value,
-                    ResourseId = receiptResource.ResourceId!.Value,
+                    ResourceId = receiptResource.ResourceId!.Value,
                     Quantity = receiptResource.Quantity,
                 };
 
@@ -228,7 +230,7 @@ namespace WarehouseService.Services
             foreach(var receiptResource in receiptDocument.ReceiptResources)
             {
                 var inventoryBalance = await _dbContext.InventoryBalances.FirstAsync(
-                                                ib => ib.ResourseId == receiptResource.ResourceId && ib.UnitId == receiptResource.UnitId);
+                                                ib => ib.ResourceId == receiptResource.ResourceId && ib.UnitId == receiptResource.UnitId);
 
                 inventoryBalance.Quantity -= receiptResource.Quantity;
                 if (inventoryBalance.Quantity < 0)
