@@ -20,6 +20,8 @@ namespace WarehouseService
 
             var app = builder.Build();
 
+            app.MigrateDB();
+
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
